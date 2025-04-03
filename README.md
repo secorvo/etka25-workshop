@@ -36,7 +36,8 @@ Eine einfache Möglichkeit, die virtuellen Maschinen von Deskmate für einen ext
 
 Auf dem Deskmate Rechner kann Tailscale einfach[^einfach] mit 
 
-[^einfach]: Einfach ist natürlich nur sicher, wenn man sich vorher das Script angeschaut hat :wink:
+[^einfach]: Einfach ist natürlich nur sicher, wenn man sich vorher das Script angeschaut[^verstanden] hat :wink:
+[^verstanden]: ... und verstanden :wink:
 
 ```bash
 curl -fsSL https://tailscale.com/install.sh | sudo sh
