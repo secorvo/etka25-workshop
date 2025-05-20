@@ -1,0 +1,284 @@
+threagile_version: 1.0.0
+
+title: ETKA 2025 Newsshop
+date: 2025-05-14
+
+author:
+  name: Kai Jendrian
+  homepage: www.secorvo.de
+
+management_summary_comment: >
+  Die Anwendung verwaltet Newsletter-Abonnements.  
+  Öffentliche Endpunkte erlauben An- und Abmeldung sowie XML-Import.  
+  Admin-Endpunkte sind per HTTP Basic abgesichert.  
+  Hauptrisiken: XML-Deserialisierung (XStream), fehlende Passwort-Hash-Härtung,
+  sowie fehlende Verschlüsselung bei der JDBC-Verbindung.
+
+business_criticality: important
+
+########################################################################
+#                           DATA ASSETS                                #
+########################################################################
+data_assets:
+
+  Newsletter Data:
+    id: newsletter-data
+    description: >
+      E-Mail-Adresse, Name, Opt-In-Status, bestätigungs­Code,
+      Mail-Eigenschaften.
+    usage: business
+    origin: Eingabe durch Nutzer*innen oder XML-Import
+    owner: Marketing
+    quantity: many
+    confidentiality: restricted
+    integrity: important
+    availability: operational
+    justification_cia_rating: DSGVO-Art.32
+
+  Credentials:
+    id: credentials-data
+    description: Admin-Benutzername und (BCrypt-)Passwort-Hash
+    usage: business
+    origin: Admin-Registrierung
+    owner: IT-Betrieb
+    quantity: few
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: DSGVO-Art.32
+
+########################################################################
+#                        TECHNICAL ASSETS                              #
+########################################################################
+technical_assets:
+
+  Subscribe.vue:
+    id: subscribe-vue
+    description: Vue-Komponente für An-/Abmeldung
+    type: external-entity
+    usage: business
+    machine: container
+    used_as_client_by_human: true
+    size: component
+    technology: web-application
+    internet: true
+    encryption: none
+    owner: Marketing
+    confidentiality: public
+    integrity: operational
+    availability: operational
+    custom_developed_parts: true
+    data_assets_processed:
+      - newsletter-data
+    communication_links:
+      Subscribe-HTTPS:
+        target: newslettercontroller
+        description: POST /api/newsletter/subscribe
+        protocol: https
+        authentication: none
+        authorization: none
+        usage: business
+        data_assets_sent:
+          - newsletter-data
+      Unsubscribe-HTTPS:
+        target: newslettercontroller
+        description: DELETE /api/newsletter/unsubscribe/{id}
+        protocol: https
+        authentication: none
+        authorization: none
+        usage: business
+
+  Admin.vue:
+    id: admin-vue
+    description: Vue-Komponente für Admin-Login und Pflege
+    type: external-entity
+    usage: business
+    machine: container
+    used_as_client_by_human: true
+    size: component
+    technology: web-application
+    internet: true
+    encryption: none
+    owner: IT-Betrieb
+    confidentiality: internal
+    integrity: important
+    availability: operational
+    custom_developed_parts: true
+    data_assets_processed:
+      - credentials-data
+      - newsletter-data
+    communication_links:
+      Admin-HTTPS:
+        target: newslettercontroller
+        description: >
+          HTTP Basic Login + GET /api/newsletter/subscribers,  
+          GET …/search, PUT …/update/{id}
+        protocol: https
+        authentication: credentials
+        authorization: enduser-identity-propagation
+        usage: business
+        data_assets_sent:
+          - credentials-data
+          - newsletter-data
+
+  NewsletterController:
+    id: newslettercontroller
+    description: REST-Controller mit Endpunkten /api/newsletter/**
+    type: process
+    usage: business
+    machine: container
+    size: component
+    technology: web-service-rest
+    encryption: transparent
+    owner: Entwicklung
+    confidentiality: internal
+    integrity: critical
+    availability: important
+    custom_developed_parts: true
+    data_assets_processed:
+      - newsletter-data
+      - credentials-data
+    data_formats_accepted:
+      - json
+      - xml
+    communication_links:
+      To-NewsletterRepository:
+        target: newsletterrepository
+        description: Persistiert Newsletter
+        protocol: in-process-library-call
+        authentication: none
+        authorization: technical-user
+        usage: business
+      To-PasswordRepository:
+        target: passwordrepository
+        description: Liest/Schreibt Passwörter
+        protocol: in-process-library-call
+        authentication: none
+        authorization: technical-user
+        usage: business
+      To-SecurityConfig:
+        target: securityconfig
+        description: Rollen-Prüfung
+        protocol: in-process-library-call
+        authentication: none
+        authorization: technical-user
+        usage: business
+
+  SecurityConfig:
+    id: securityconfig
+    description: Spring-Security-Konfiguration
+    type: process
+    usage: business
+    machine: container
+    size: component
+    technology: library
+    encryption: transparent
+    owner: Entwicklung
+    confidentiality: internal
+    integrity: critical
+    availability: important
+    custom_developed_parts: true
+    data_assets_processed:
+      - credentials-data
+
+  NewsletterRepository:
+    id: newsletterrepository
+    description: JDBC-Repository (Newsletter-Tabelle)
+    type: process
+    usage: business
+    machine: container
+    size: component
+    technology: function
+    encryption: transparent
+    owner: Entwicklung
+    confidentiality: restricted
+    integrity: important
+    availability: operational
+    custom_developed_parts: true
+    data_assets_processed:
+      - newsletter-data
+    communication_links:
+      JDBC-Newsletter:
+        target: database
+        description: INSERT/SELECT/UPDATE newsletter
+        protocol: jdbc
+        authentication: credentials
+        authorization: technical-user
+        usage: business
+        data_assets_sent:
+          - newsletter-data
+
+  PasswordRepository:
+    id: passwordrepository
+    description: JDBC-Repository (Password-Tabelle)
+    type: process
+    usage: business
+    machine: container
+    size: component
+    technology: function
+    encryption: transparent
+    owner: Entwicklung
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: operational
+    custom_developed_parts: true
+    data_assets_processed:
+      - credentials-data
+    communication_links:
+      JDBC-Passwords:
+        target: database
+        description: INSERT/SELECT/UPDATE password
+        protocol: jdbc
+        authentication: credentials
+        authorization: technical-user
+        usage: business
+        data_assets_sent:
+          - credentials-data
+
+  Database:
+    id: database
+    description: Relationale H2-Datenbank
+    type: datastore
+    usage: business
+    machine: virtual
+    size: component
+    technology: database
+    encryption: transparent
+    owner: IT-Betrieb
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: important
+    custom_developed_parts: false
+    data_assets_stored:
+      - newsletter-data
+      - credentials-data
+
+########################################################################
+#                        TRUST BOUNDARIES                              #
+########################################################################
+trust_boundaries:
+
+  Browser:
+    id: browser
+    description: Endgeräte der Nutzer*innen
+    type: network-cloud-provider
+    technical_assets_inside:
+      - subscribe-vue
+      - admin-vue
+
+  Backend:
+    id: backend
+    description: Container-Cluster (Spring Boot)
+    type: network-on-prem
+    technical_assets_inside:
+      - newslettercontroller
+      - securityconfig
+      - newsletterrepository
+      - passwordrepository
+
+  Datastore:
+    id: datastore
+    description: Netzwerksegment für die H2-DB
+    type: network-on-prem
+    technical_assets_inside:
+      - database

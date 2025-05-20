@@ -9,13 +9,13 @@ Wir wünschen viel Erfolg und vor allem viel Spaß!
 | Zeit          | Thema                                    |
 |:--------------|:-----------------------------------------|
 | 09:00 - 09:45 | Vorstellung: Warum ist Security wichtig? |
-| 09:45 - 10:45 | Hacking _newsshop_                       |
-| 10:45 - 11:00 | _Pause_                                  |
-| 11:00 - 12:00 | Threat Modeling _newsshop_               |
-| 12:00 - 13:00 | _Mittagspause_                           |
-| 13:00 - 14:30 | Fixing _newsshop_                        |
-| 14:30 - 14:45 | _Pause_                                  |
-| 14:45 - 15:45 | Praxisherausforderungen                  |
+| 09:45 - 11:15 | Hacking _newsshop_                       |
+| 11:15 - 11:30 | _Pause_                                  |
+| 11:30 - 12:30 | Threat Modeling _newsshop_               |
+| 12:30 - 13:30 | _Mittagspause_                           |
+| 13:30 - 15:00 | Fixing _newsshop_                        |
+| 15:00 - 15:15 | _Pause_                                  |
+| 15:15 - 15:45 | Praxisherausforderungen                  |
 | 15:45 - 16:00 | Zusammenfassung und Abschluss            |
 
 ## Trainingsumgebung
